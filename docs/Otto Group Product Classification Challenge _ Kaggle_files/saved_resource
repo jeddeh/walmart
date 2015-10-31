@@ -1,0 +1,10 @@
+if (window['google'] != undefined && window['google']['loader'] != undefined) {
+if (!window['google']['visualization']) {
+window['google']['visualization'] = {};
+google.visualization.Version = '1.1';
+google.visualization.JSHash = 'b9acaf9ce948f3550e84416288f03821';
+google.visualization.LoadArgs = 'file\75visualization\46v\0751.1\46packages\75corechart%2Ctable\46async\0752';
+}
+google.loader.writeLoadTag("css", google.loader.ServiceBase + "/api/visualization/1.1/b9acaf9ce948f3550e84416288f03821/ui+en,table+en.css", true);
+google.loader.writeLoadTag("script", google.loader.ServiceBase + "/api/visualization/1.1/b9acaf9ce948f3550e84416288f03821/webfontloader,format+en,default+en,ui+en,table+en,corechart+en.I.js", true);
+}
