@@ -177,10 +177,7 @@ pred <- t(pred)
 
 # output
 pred <- data.frame(cbind(test.VisitNumber, pred))
-names(pred) <- c("VisitNumber", paste("TripType", outcomes$TripType), sep = "_") 
+names(pred) <- c("VisitNumber", paste("TripType", outcomes$TripType, sep = "_")) 
 
-write.table(pred, "./output/xgboost.csv",
-            row.names = FALSE,
-            
-            sep = ",")
+write.table(format(pred, scientific = FALSE), "./output/xgboost4.csv", row.names = FALSE, sep = ",")
 
