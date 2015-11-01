@@ -1,0 +1,995 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0045)https://developer.walmartlabs.com/apps/mykeys -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><script async="" src="./Walmart Open API_files/analytics.js"></script><script type="text/javascript" async="" src="./Walmart Open API_files/ga.js"></script><script type="text/javascript" src="chrome-extension://kajfghlhfkcocafkcjlajldicbikpgnp/catcher.js"><!-- script injected by Request Maker --></script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        
+        <link rel="P3Pv1" href="https://developer.walmartlabs.com/w3c/p3p.xml">
+        <script type="text/javascript">
+            //<![CDATA[
+            var mashery_info = {
+            'username':"jeddeh"
+            };
+
+            // iframe'd detection, to pop out if in an iframe
+            if (window.location !== parent.window.location && !(/(page|docs|blog)\/preview/.test(window.location.pathname))) {
+                parent.window.location = window.location;
+            }
+            //]]>
+        </script>
+        <title>Walmart Open API</title>    <meta name="robots" content="noarchive">
+    <link rel="stylesheet" type="text/css" media="screen" href="./Walmart Open API_files/Mashery-base.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="./Walmart Open API_files/walmart-theme.css+">
+    <link rel="stylesheet" media="print" type="text/css" href="./Walmart Open API_files/print-default.css">
+<style type="text/css" media="screen">
+<!--
+/****************************TEMP CSS FOR PREVIEW ONLY *****************************/
+//**
+ *
+ * WALMART TEMPLATE - 2013
+ *
+ * Use this as a template for your custom theme. Only the backgrounds are defined to help you see where each element
+ * goes. Set this as your custom theme and then view your Mashery site. Then start customizing to implement your own
+ * theme!
+ *
+ * Check out http://support.mashery.com/public/Mashery/styles/masherycssfw.src.css to see the base structural defaults.
+ * You can find documentation on customizing your portal at http://support.mashery.com/docs/Customizing_Your_Portal
+ * We discourage making major changes to the layout since it has a standard structure to it which is easy for users
+ * to use.
+ *
+ */
+body {
+  background: #fff;
+  color: #484848;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #3D89D2;
+  font-family: inherit;
+  font-weight: normal;
+  margin: 0;
+  text-rendering: optimizelegibility;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+h2 {
+  font-size: 1.5em;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+p {
+  font-size: 1em;
+}
+
+a:link, a:visited {
+  color: #137AAA;
+}
+a:hover, a:active {
+  color: #0B4965;
+  text-decoration: none;
+}
+
+/* All the input fields (text input, textareas, selects) */
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+select,
+textarea,
+input[type="text"],
+input[type="password"],
+input[type="search"] {
+  display: inline-block;
+  font-size: 14px;
+  color: #555555;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+
+textarea,
+input[type="text"],
+input[type="password"],
+input[type="search"] {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -webkit-transition: border linear 0.2s, box-shadow linear 0.2s;
+  -moz-transition: border linear 0.2s, box-shadow linear 0.2s;
+  -o-transition: border linear 0.2s, box-shadow linear 0.2s;
+  transition: border linear 0.2s, box-shadow linear 0.2s;
+}
+
+textarea:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus {
+  border-color: rgba(82, 168, 236, 0.8);
+  outline: 0;
+  outline: thin dotted \9;
+  /* IE6-9 */
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+table thead th {
+  border-bottom: 1px solid #999;
+}
+table td {
+  border-bottom: 1px solid #ddd;
+}
+
+/* Set the overall width */
+div#page,
+div#header,
+div#content,
+div#local,
+div#user,
+div#user-menu,
+div#footer {
+  width: 1024px;
+}
+
+/* For pages without navigation (you can set which pages you do not want to have navigation on, for whatever reason) */
+/* For pages without a side column, you can set which pages do or do not have side columns. */
+div#page.no_sub div#main {
+  width: 1024px;
+}
+
+/**
+ *
+ * HEADER
+ *
+ * The header is where your logo, login links, search, and user control links should go.
+ *
+ */
+div#header {
+  height: 70px;
+  width: 100%;
+}
+
+#branding {
+  width: 960px;
+  margin: 0 auto;
+}
+
+div#search {
+  top: 63px;
+  right: 5px;
+}
+
+form#search-input input#search-box {
+  -moz-border-radius: 15px;
+  -webkit-border-radius: 15px;
+  -o-border-radius: 15px;
+  -ms-border-radius: 15px;
+  -khtml-border-radius: 15px;
+  border-radius: 15px;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 7px 30px 6px 13px;
+  margin: -5px -30px 0 0;
+  width: 150px;
+}
+
+form#search-input input.search-button {
+  margin-top: 1px;
+  text-indent: -9999px;
+  text-transform: uppercase;
+  border: 0;
+  width: 17px;
+  height: 16px;
+  background: transparent url("/files/search-bg.png") no-repeat 0 0;
+}
+
+        /* Here is where you put your logo! Yes, it is the background of a div. This div is special because Javascript makes it behave
+           like a Home link by default, you can change this in the settings if you absolutely must.
+
+           You must change the width and height of this div to the same size as your logo. */
+div#branding-logo {
+  background: transparent url("/files/walmart.png") no-repeat 0 0;
+  margin: 10px 0 0 10px;
+  width: 167px;
+  height: 70px;
+}
+
+div#branding-mashery {
+  right: 0;
+  top: 100px;
+}
+
+.badge a {
+  background-image: url("/public/Mashery/images/masherymade-gray.gif");
+  bottom: 8px;
+  float: right;
+  height: 37px;
+  position: absolute;
+  right: 0;
+  width: 90px;
+  display: block;
+}
+
+.badge:hover a {
+  background-image: url("/public/Mashery/images/masherymade.gif");
+}
+
+/* END HEADER */
+/**
+ *
+ * USER
+ *
+ * User information and actions
+ *
+ */
+div#user {
+  /*position: relative; This causes issues in IE6 */
+}
+
+/**
+ *
+ * USER NAV
+ *
+ * Login, logout, register, and My Account links.
+ *
+ */
+div#user-nav {
+  top: 0;
+  margin: -50px -8px 0;
+  /* Use top margin to move this around when you can. */
+}
+div#user-nav ul li {
+  /* The user's name, "Signed in as Wally Wombat" */
+}
+div#user-nav ul li span.name {
+  color: #64a838;
+  font-weight: bold;
+}
+
+/* END USER NAV */
+/* END USER */
+/**
+ *
+ * LOCAL NAV
+ *
+ * This is the main navigation bar. You can customize your links in the Settings page.
+ *
+ * The div#local appears AFTER the content for accessbility reasons. Please see
+ * http: //www.contentwithstyle.co.uk/Articles/17/ for details.
+ *
+ * Because the navigation is placed below the content, you will most likely need
+ * to use absolute positioning. Please make sure you understand positioning before
+ * trying to customize it!
+ *
+ */
+div#local {
+  left: 260px;
+  top: -12px;
+  width: 530px;
+}
+div#local li a {
+  font-weight: normal;
+  padding: 5px 10px 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -o-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+}
+div#local li a:hover {
+  background: #3D89D2;
+  color: #ccc;
+  text-decoration: none;
+}
+div#local li.active a {
+  background: #3D89D2;
+  color: #fff;
+}
+
+/* END LOCAL NAV */
+/**
+ *
+ * USER MENU
+ *
+ * The User Menu contains actions for the user: Start New Entry, New Post, etc.
+ *
+ */
+/**
+ *
+ * SUB LOCAL NAVIGATION
+ *
+ * Links under each primary navigation section.
+ *
+ */
+div#user-menu {
+  display: none;
+}
+
+/* END SUBLOCAL NAV */
+/* END USER MENU */
+/**
+ *
+ * CONTENT
+ *
+ * Where the magic happens (Content of page)
+ *
+ */
+div#content {
+  overflow: visible;
+}
+
+/**
+ *
+ * MAIN
+ *
+ * This is where almost all the content for every page is.
+ *
+ */
+div#main {
+  min-height: 500px;
+  padding: 0;
+  margin-top: 60px;
+  width: 700px;
+}
+
+.page-header-content {
+  float: left;
+  margin-left: 30px;
+  margin-top: -50px;
+}
+
+#page-page .title {
+  background: none repeat scroll 0 0 #fff;
+  color: #3D89D2;
+  padding: 0;
+  position: relative;
+  top: 0;
+}
+
+#page-page .title h1 {
+  color: #3D89D2;
+  font-size: 23px;
+  line-height: 27px;
+  margin: 0;
+  padding: 0;
+}
+
+.hero {
+    border-bottom: 1px solid #EFEFEF;
+    float: left;
+    height: 260px;
+    margin: 70px 0 0 20px;
+    width: 980px;
+}
+
+.hero-copy {
+  float: left;
+  line-height: 1.5em;
+  margin: 13px 0 20px 0;
+  width: 670px;
+}
+
+.home-img {
+  float: right;
+  left: 35px;
+  position: relative;
+  width: 255px;
+  margin: -64px 20px 0 0;
+}
+
+.get-started {
+  float: right;
+  margin: 40px 20px 0 0;
+}
+
+.get-started a {
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -o-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border-radius: 5px;
+  font-size: 1.3em;
+  padding: 15px;
+  color: #ffffff;
+  background-color: #006dcc;
+}
+
+.get-started a:hover {
+  color: #ffffff;
+  background-color: #666;
+}
+
+.home-middle {
+  float: left;
+  width: 100%;
+  margin: 25px 0 0;
+}
+
+.col {
+  float: left;
+  padding: 0 15px 10px 15px;
+  width: 275px;
+  border-right: 1px dashed #c7c7c7;
+  min-height: 250px;
+}
+
+.col h2 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.col.last {
+  border-right: none;
+}
+
+.starter h3 {
+  background: url("/files/gear-green.png") no-repeat scroll 0 0 transparent;
+}
+
+.develop-with-these {
+  padding-right: 25px;
+  width: 325px;
+}
+
+.develop-with-these h2 {
+  font-size: 23px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.develop-with-these h3 {
+  color: #137AAA;
+  font-size: 20px;
+  font-weight: 600;
+  padding-bottom: 5px;
+  padding-left: 50px;
+}
+
+.develop-with-these p {
+  margin-top: -5px;
+  padding-left: 50px;
+}
+
+.start h2 {
+  color: #848484;
+  float: left;
+  font-size: 1.7em;
+  margin: 20px 0 0 40px;
+}
+
+/**
+ *
+ * BLOG, WIKI, FORUM, and DOCS
+ *
+ * Styling for the sections, meta info, file tables, and other parts of these apps.
+ *
+ * Remember, there are usually different states of each app type! For example, when browsing the forum the body will have
+ * an id of #page-forum and a class of .browse. If you click on a forum post to view it, the body will still have the same
+ * id, but the class will change to .read. This way you can control the different views of each app.
+ *
+ */
+/* Comments in all sections except the forum. */
+/**
+ *
+ * FORUM
+ *
+ * The forum is very different than the blog, wiki, docs, etc. Be sure to check out the markup, the default styling
+ * should be ok for most people, but you may need to override some of your list (ul, ol) rules that you set in this
+ * stylesheet.
+ *
+ */
+/* The "Start new topic" button */
+body.page-forum a.create-new {
+  /* Subject of a thread */
+  /* The "original post" in each thread looks different by default */
+}
+
+.page-forum ol.topics ul, .page-forum ol.categories ul {
+  margin: 0;
+  overflow: hidden;
+  padding: 10px 0;
+}
+
+.page-forum h3.subject {
+  border: 0;
+}
+
+.codebox {
+  font-family:courier;
+  background:#eeeeee;
+  padding:2px;
+  font-size:small;
+}
+
+.codebox p {
+  margin:0;
+}
+
+.main th {
+  background-color:#bbb;
+  font-weight:normal;
+}
+
+/* END FORUM */
+/* END BLOG, WIKI, FORUM, and DOCS */
+/* END MAIN */
+/**
+ *
+ * SUB
+ *
+ * The sub div is usually the small sidebar on the blog/wiki/forum, although some may prefer to hide it altogether.
+ *
+ * In the Dashboard, the sub is also where the form lives to add new content in the Content page.
+ *
+ */
+div#sub {
+  background: -moz-linear-gradient(center top, #727272, #595959) repeat scroll 0 0 transparent;
+  background: -webkit-gradient(linear, left top, left bottom, from(#727272), to(#595959));
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#727272', endColorstr='#595959');
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 4px 4px 4px 4px;
+  box-shadow: 0 0 8px #888888;
+  color: #FFFFFF;
+  margin: 85px 0 0;
+  padding: 10px 12px;
+  width: 200px;
+}
+div#sub li {
+  color: #1A75CF;
+}
+div#sub li li {
+  border: 0;
+}
+div#sub h2 {
+  font-size: 1.5em;
+  color: #fff;
+}
+
+#sub a {
+  color: #fff;
+}
+
+/* END SUB */
+/* END CONTENT */
+/**
+ *
+ * FOOTER
+ *
+ * Contains your site-info as well as your footer links.
+ *
+ */
+div#footer {
+  margin-top: 10px;
+  padding-top: 45px;
+  width: 100%;
+  box-shadow: 0 6px 6px -4px rgba(0, 0, 0, 0.05) inset;
+  color: #1D7CA7;
+}
+div#footer ul {
+  margin: 0 auto;
+  text-align: left;
+}
+div#footer ul li {
+  border-right: 1px solid #D2D2D2;
+  padding-right: 10px;
+}
+
+#footer li.last {
+  border: 0;
+}
+
+#footer .social-media-links {
+  float: left;
+  width: 150px;
+}
+
+#footer .social ul li {
+  border: 0;
+  margin: 0;
+}
+
+.social {
+  position: absolute;
+  width: 150px;
+  bottom: 7px;
+}
+
+/**
+ *
+ * SITEINFO
+ *
+ * The siteinfo you can edit from the Settings page in the Dashboard.
+ * Usually this contains copyright stuff and credits.
+ *
+ */
+div.section-meta {
+  float: left;
+}
+
+.credentials div {
+  margin: 5px 0 0;
+}
+
+.servicesIodocs h2 {
+  font-size: 18px;
+}
+
+/* END SITEINFO */
+/* END FOOTER */
+/* END THEME TEMPLATE */
+#slideshow {
+  border-bottom: 1px solid #efefef;
+  float: left;
+  height: 240px;
+  margin: 0;
+  padding-bottom: 48px;
+  width: 900px;
+}
+
+#slider-nav {
+  float: left;
+  padding: 10px;
+  width: 200px;
+}
+
+#slider-nav a {
+  display: block;
+}
+
+#slider-nav a:hover {
+  color: #CCCCCC;
+}
+
+#prev {
+  float: left;
+  margin-top: 100px;
+}
+
+#prev a {
+  background: url("http://demo1.mashery.com/files/left-arrow.png") no-repeat scroll left top transparent;
+  display: block;
+  height: 75px;
+  width: 39px;
+}
+
+#prev a:hover {
+  background: url("http://demo1.mashery.com/files/left-over.png") no-repeat scroll left top transparent;
+  display: block;
+  height: 75px;
+  width: 39px;
+}
+
+#next {
+  float: right;
+  margin-top: 100px;
+}
+
+#next a {
+  background: url("http://demo1.mashery.com/files/right-arrow.png") no-repeat scroll left top transparent;
+  display: block;
+  height: 75px;
+  width: 39px;
+}
+
+#next a:hover {
+  background: url("http://demo1.mashery.com/files/right-over.png") no-repeat scroll left top transparent;
+  display: block;
+  height: 75px;
+  width: 39px;
+}
+
+#content #getting-started {
+  float: left;
+  list-style: none outside none;
+  margin: 50px 0 0;
+  overflow: hidden;
+  width: 1010px;
+}
+
+#content #getting-started ul {
+  margin: 0;
+}
+
+#content #getting-started ul li {
+  border-right: 1px solid #EFEFEF;
+  color: #666666;
+  display: inline;
+  float: left;
+  font-size: 14px;
+  height: 200px;
+  margin-left: 50px;
+  opacity: 0.9;
+  text-align: center;
+  width: 205px;
+}
+
+#content #getting-started ul li.last {
+  border: 0 none;
+}
+
+#content #getting-started li .icon {
+  margin: 15px;
+  opacity: 1;
+}
+
+#content #getting-started li .title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-decoration: none;
+}
+
+#content #getting-started li p, .title {
+  font-size: 12px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+#content #getting-started a {
+  color: #3D89D2!important;
+  font-size: 16px;
+}
+
+#content #getting-started li:first-child {
+  margin-left: 0;
+}
+-->
+</style>
+    <script src="./Walmart Open API_files/Mashery-base.js" type="text/javascript"></script><style type="text/css"></style>
+    <script src="./Walmart Open API_files/jquery.min.js" type="text/javascript"></script>
+        <!-- add syntax highlighter -->
+        <script type="text/javascript">
+            if(window.SyntaxHighlighter != undefined) { // check for syntax highlighter load before using
+                SyntaxHighlighter.all();
+            }
+        </script>
+        <!-- end syntax highlighter -->
+        <!--[if lt IE 7.]>
+            <link href="/public/Mashery/styles/IE6.css" type="text/css" media="screen" rel="stylesheet" />
+        <![endif]-->
+        <!--[if IE 7]>
+            <link href="/public/Mashery/styles/IE7.css" type="text/css" media="screen" rel="stylesheet" />
+        <![endif]-->
+        <!--[if gte IE 8]>
+            <link href="/public/Mashery/styles/IE8.css" type="text/css" media="screen" rel="stylesheet" />
+        <![endif]-->
+
+    </head>
+    <body id="page-apps" class="page-apps mykeys signed-in en_US">
+        <!-- PAGE -->
+        <div id="page" class="page mykeys no_sub">
+
+            <!-- HEADER -->
+            <div id="header" class="header">
+                <div id="branding" class="branding">
+                    <div id="branding-logo" class="branding-logo">
+                        Walmart Open API                    </div><!-- /branding-logo -->
+                    <div id="branding-tagline">
+                    </div><!-- /branding-tagline -->
+                    <div id="branding-mashery">
+                    </div><!-- /branding-mashery -->
+                </div><!-- /branding -->
+                <div id="search" class="search">
+    <form id="search-input" class="search-input" method="get" action="https://developer.walmartlabs.com/search">
+        <div>
+            <input id="search-box" class="search-box" type="text" value="" name="q">
+            <input id="search-button" class="search-button" type="submit" value="Search">
+        </div>
+    </form>
+</div>
+            </div>
+            <!-- /HEADER -->
+
+            <div id="user" class="user">
+                <div id="user-auth" class="user-auth">
+                </div><!-- /user-auth -->
+                <div id="user-main" class="user-main">
+                </div><!-- /user-main -->
+                <div id="user-nav" class="user-nav">
+                    <ul>
+                            <li class="first status">
+        Signed in as <span class="name">jeddeh</span>
+    </li>
+    <li class="account">
+        <a href="https://developer.walmartlabs.com/member/my-account">My Account</a>    </li>
+        
+    
+        <li class="last sign-out">
+        <a href="https://developer.walmartlabs.com/apps/mykeys#" onclick="document.getElementById(&#39;mashery-logout-form&#39;).submit();">Sign Out</a>
+            <form action="https://developer.walmartlabs.com/logout/logout" method="post" enctype="multipart/form-data" id="mashery-logout-form" style="display:none;">
+    <fieldset style="display: none;">
+        <input type="hidden" name="synctoken" value="3a90106b610b2bf590960fcc05a3be45">
+    </fieldset>
+    <dl>
+        <dt>
+            <label for="process-logout"></label>
+        </dt>
+        <dd>
+            <input type="submit" name="process" value="Sign Out" id="process-logout" class="input-submit process-logout">
+        </dd>
+    </dl>
+    </form>    </li>
+                    </ul>
+                </div><!-- /user-nav -->
+                <div id="user-menu">
+        <ul>
+    
+        </ul>
+</div>
+            </div><!-- /user -->
+
+            <div id="info" class="info" style="display: none;">
+            </div><!-- /info -->
+
+            <!-- CONTENT -->
+            <div id="content" class="content">
+
+                
+                <div id="main" class="main">
+                    <h1 class="first">My API Keys</h1>
+<div class="section">
+    <div class="section-menu navigation">
+    <ul>
+        
+        <li class="active my-keys">
+            <a href="./Walmart Open API_files/Walmart Open API.html">Keys</a>        </li>
+
+        
+        <li class="my-apps">
+            <a href="https://developer.walmartlabs.com/apps/myapps">Applications</a>        </li>
+
+	    
+                    <li class="manage-account">
+                <a href="https://developer.walmartlabs.com/member/edit">Manage Account</a>            </li>
+                    </ul>
+</div>
+    <div class="section-body">
+<h2>Product APIs: Production</h2><div class="key">
+    <h3>Key: xkk84gntx74t2bmjx6gmgqcr</h3>
+    <dl>
+        <dt>Application</dt>
+        <dd>kaggletest</dd>
+                <dt>
+            Key: 
+        </dt>
+        <dd>
+            xkk84gntx74t2bmjx6gmgqcr
+        </dd>
+        <dt>
+            Status: 
+        </dt>
+        <dd>
+            active
+        </dd>
+        <dt>
+            Created: 
+        </dt>
+        <dd>
+            <abbr title="10/31/15 2:14 pm">6 minutes ago</abbr>
+        </dd>    </dl>
+
+    <table class="key"><thead><tr><th colspan="2">Key Rate Limits</th></tr></thead><tbody><tr><td class="number">5</td><td>Calls per second</td></tr><tr><td class="number">5,000</td><td>Calls per day</td></tr></tbody></table>
+            <div class="key-actions actions">
+    <ul>
+                    <li>
+                <a href="https://developer.walmartlabs.com/key/key-activity/884119/xkk84gntx74t2bmjx6gmgqcr" class="view-report action">View Report</a>            </li>
+                <li>
+            <a href="https://developer.walmartlabs.com/key/delete-key/884119/xkk84gntx74t2bmjx6gmgqcr" class="delete action">Delete Key</a>        </li>
+    </ul>
+</div>    </div>
+    </div>
+</div>
+                </div><!-- /main -->
+
+                <!-- SUB -->
+                <div id="sub" class="sub">
+                                    </div>
+                <!-- /SUB -->
+
+                <div id="breadcrumbs">
+                </div><!-- /breadcrumbs -->
+
+                <div id="local" class="local">
+                    <ul>
+    <li class=" first"><a href="https://developer.walmartlabs.com/page">Home</a></li>
+    <li class=" "><a href="https://developer.walmartlabs.com/io-docs">Developer Console</a></li>
+    <li class=" "><a href="https://developer.walmartlabs.com/docs">Documentation</a></li>
+    <li class=" "><a href="https://developer.walmartlabs.com/forum">Forum</a></li>
+    <li class=" "><a href="https://developer.walmartlabs.com/blog">Blog</a></li>
+</ul>
+                </div><!-- /local -->
+
+                                    <div id="nav" class="nav">
+                    </div><!-- /nav -->
+                            </div>
+            <!-- /CONTENT -->
+
+            <div id="footer" class="footer">
+
+                <ul>
+    <li class=" first"><a href="https://developer.walmartlabs.com/docs">Documentation</a></li>
+    <li class=" "><a href="https://developer.walmartlabs.com/forum">Forum</a></li>
+    <li class=" "><a href="https://developer.walmartlabs.com/Success_Stories">Success Stories</a></li>
+    <li class=" "><a href="https://developer.walmartlabs.com/blog">Blog</a></li>
+    <li class=" "><a href="https://developer.walmartlabs.com/contact">Contact Us</a></li>
+    <li class=" last"><a href="https://developer.walmartlabs.com/API_Terms_of_Use">Terms of Use</a></li>
+</ul>
+
+                <!-- SITEINFO -->
+                <div id="siteinfo" class="siteinfo">
+                                        </div>
+                <!-- /SITEINFO -->
+            </div><!-- /footer -->
+        </div>
+        <!-- /page -->
+
+        <!-- Start Branding script tag -->
+        <script type="text/javascript">
+            // get the branding logo to set the mouseover/out and onclick
+            var brandingLogo = document.getElementById('branding-logo');
+            if(brandingLogo != undefined) {
+                brandingLogo['onclick'] = function() {
+                    location.href = "https://developer.walmartlabs.com/";
+                };
+                brandingLogo['onmouseover'] = function() {
+                    this.style.cursor = 'pointer';
+                };
+                brandingLogo['onmouseout'] = function() {
+                    this.style.cursor = 'auto';
+                };
+            }
+
+            // get the mashery logo to set the mouseover/out and onclick
+            var masheryLogo = document.getElementById('branding-mashery');
+            if(masheryLogo != undefined) {
+                masheryLogo['onclick'] = function() {
+                    location.href = "http://www.mashery.com/";
+                };
+                masheryLogo['onmouseover'] = function() {
+                    this.style.cursor = 'pointer';
+                };
+                masheryLogo['onmouseout'] = function() {
+                    this.style.cursor = 'auto';
+                };
+            }
+        </script>
+        <!-- End Branding script tag -->
+            <!-- <div id="extra1">&nbsp;</div>
+            <div id="extra2">&nbsp;</div> -->
+
+        <script type="text/javascript">
+//<![CDATA[
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','__gaTracker');
+
+  __gaTracker('create', 'UA-47294063-1', 'walmartlabs.com');
+  __gaTracker('send', 'pageview');
+//]]>
+</script>
+        <!-- Start Quantcast tag -->
+        <script type="text/javascript">
+            _qoptions={
+                qacct:"p-2eDO_fDX5hTv6"
+            };
+        </script>
+        <script type="text/javascript" src="./Walmart Open API_files/quant.js"></script>
+        <noscript>
+            &lt;img src="https://secure.quantserve.com/pixel/p-2eDO_fDX5hTv6.gif" style="display: none;" border="0" height="1" width="1" alt="Quantcast"/&gt;
+        </noscript>
+        <!-- End Quantcast tag -->
+    
+
+<div id="mashery-tooltip" class="mashery-tooltip"><div id="mashery-tooltip-arrow" class="arrow"></div><div id="mashery-tooltip-inner" class="inner"></div></div></body></html>

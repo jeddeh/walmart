@@ -43,26 +43,46 @@ dt$ReturnCount <- -dt$ScanCount
 dt$ReturnCount[dt$ReturnCount < 0] <- 0
 dt$ScanCount[dt$ScanCount < 0] <- 0
 
+dt$Weekday <- as.numeric(dt$Weekday)
+
+item.counts <- summarise(group_by(dt, VisitNumber), TotalScan = sum(ScanCount), TotalReturn = sum(ReturnCount))
+
 # Convert dt data.frame from long to wide format using dcast from reshape2 package
 # We want to aggregate on columns "TripType", "VisitNumber" and "Weekday" 
 dt.long <- melt(data = dt, measure.vars = c("ScanCount", "ReturnCount"))
 dt.long <- rename(dt.long, ItemCount = variable)
 
-dt.wide <- dcast(data = dt.long, VisitNumber + TripType + Weekday ~ DepartmentDescription + ItemCount, value.var = "value", fun.aggregate = sum)
-dt.wide$Weekday <- as.numeric(dt.wide$Weekday)
+dt.wide <- dcast(data = dt.long,
+                 VisitNumber + TripType + Weekday ~ DepartmentDescription + ItemCount,
+                 value.var = "value",
+                 fun.aggregate = sum)
+
+dt.wide <- merge(dt.wide, item.counts, by = "VisitNumber")
 
 # Split train and test 
 train <- dt.wide[dt.wide$TripType != -1, ]
 test <- dt.wide[dt.wide$TripType == -1, ]
 
+train$VisitNumber <- NULL
+test.VisitNumber <- test$VisitNumber
+test$VisitNumber <- NULL
+
 # check for zero variances
 zero.var = nearZeroVar(train, saveMetrics=TRUE)
 zero.var
+zero.var[zero.var$zeroVar == TRUE, ]
+zero.var[zero.var$nzv == FALSE, ]
 
-# # correlation matrix
-# corrplot.mixed(cor(train), lower="circle", upper="color", 
-#                tl.pos="lt", diag="n", order="hclust", hclust.method="complete")
-# 
+# experimental - get rid of nzv features
+cols <- row.names(zero.var[zero.var$nzv == TRUE, ]) # columns to discard
+colNums <- match(cols, names(train))
+train <- select(train, -colNums)
+test <- select(test, -colNums)
+
+# correlation matrix
+corrplot.mixed(cor(train), lower="circle", upper="color", 
+               tl.pos="lt", diag="n", order="hclust", hclust.method="complete")
+
 # ## tsne plot
 # # t-Distributed Stochastic Neighbor Embedding
 # tsne = Rtsne(as.matrix(train), check_duplicates=FALSE, pca=TRUE, 
@@ -84,20 +104,11 @@ zero.var
 
 # train.wide2 <- dcast(data = train.long, VisitNumber ~ FinelineNumber)
 # train.wide3 <- dcast(data = train.long, VisitNumber ~ Upc)
-
+# 
 # train.wide <- merge(train.wide1, train.wide2, by = "VisitNumber")
 # train.wide <- merge(train.wide, train.wide3, by = "VisitNumber")
 
-# rescale numeric fratures
-# train2 <- aggregate(cbind(ScanCount, ReturnCount) ~ VisitNumber + TripType + Weekday, data = train, FUN = sum)
-# train2$logScanCount <- log1p(train2$ScanCount)
-# train2$logReturnCount <- log1p(train2$ReturnCount)
-
 ## xgboost
-train$VisitNumber <- NULL
-test.VisitNumber <- test$VisitNumber
-test$VisitNumber <- NULL
-
 y <- plyr::mapvalues(train$TripType, from = outcomes$TripType, to = outcomes$Index)
 
 train$TripType <- NULL
@@ -125,7 +136,7 @@ dtrain <- xgb.DMatrix(data = train.matrix, label = y)
 ## cv
 set.seed(1234)
 
-cv.nround <- 10 # 200
+cv.nround <- 50 # 200
 cv.nfold <- 3 # 10
 
 bst.cv <- xgb.cv(param=param, data = train.matrix, label = y, 
@@ -180,4 +191,7 @@ pred <- data.frame(cbind(test.VisitNumber, pred))
 names(pred) <- c("VisitNumber", paste("TripType", outcomes$TripType, sep = "_")) 
 
 write.table(format(pred, scientific = FALSE), "./output/xgboost4.csv", row.names = FALSE, sep = ",")
+
+
+# http://api.walmartlabs.com/v1/items?format=json&apiKey=xkk84gntx74t2bmjx6gmgqcr&upc=078257317042
 
