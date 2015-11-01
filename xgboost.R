@@ -27,6 +27,9 @@ time.start <- Sys.time()
 train.data <- read.csv("./input/train.csv", header = TRUE)
 test.data <- read.csv("./input/test.csv", header = TRUE)
 
+# train.data <- train.data[1:1000, ]
+# test.data <- test.data[1:1000, ]
+
 # Create outcomes for xgboost
 outcomes <- data.frame(TripType = sort(unique(train.data$TripType)))
 outcomes$Index <- seq_along(outcomes$TripType) - 1
@@ -46,6 +49,7 @@ dt$ReturnCount[dt$ReturnCount < 0] <- 0
 dt$ScanCount[dt$ScanCount < 0] <- 0
 
 dt$Weekday <- as.numeric(dt$Weekday)
+dt$FinelineNumber <- as.factor(dt$FinelineNumber)
 
 item.counts <- summarise(group_by(dt, VisitNumber), TotalScan = sum(ScanCount), TotalReturn = sum(ReturnCount))
 
@@ -54,11 +58,17 @@ item.counts <- summarise(group_by(dt, VisitNumber), TotalScan = sum(ScanCount), 
 dt.long <- melt(data = dt, measure.vars = c("ScanCount", "ReturnCount"))
 dt.long <- rename(dt.long, ItemCount = variable)
 
-dt.wide <- dcast(data = dt.long,
+dt.wide1 <- dcast(data = dt.long,
                  VisitNumber + TripType + Weekday ~ DepartmentDescription + ItemCount,
                  value.var = "value",
                  fun.aggregate = sum)
 
+dt.wide2 <- dcast(data = dt.long,
+                  VisitNumber ~ FinelineNumber,
+                  value.var = "ScanCount",
+                  fun.aggregate = sum)
+
+dt.wide <- merge(dt.wide1, dt.wide2, by = "VisitNumber")
 dt.wide <- merge(dt.wide, item.counts, by = "VisitNumber")
 
 # Split train and test 
@@ -81,9 +91,9 @@ zero.var[zero.var$nzv == FALSE, ]
 # train <- select(train, -colNums)
 # test <- select(test, -colNums)
 
-# correlation matrix
-corrplot.mixed(cor(train), lower="circle", upper="color", 
-               tl.pos="lt", diag="n", order="hclust", hclust.method="complete")
+# # correlation matrix
+# corrplot.mixed(cor(train), lower="circle", upper="color", 
+#                tl.pos="lt", diag="n", order="hclust", hclust.method="complete")
 
 # ## tsne plot
 # # t-Distributed Stochastic Neighbor Embedding
@@ -189,14 +199,25 @@ pred <- matrix(pred, nrow=num.class, ncol=length(pred) / num.class)
 pred <- t(pred)
 
 # output
-pred <- data.frame(cbind(test.VisitNumber, pred))
-names(pred) <- c("VisitNumber", paste("TripType", outcomes$TripType, sep = "_")) 
-
-write.table(format(pred, scientific = FALSE), "./output/xgboost6.csv", row.names = FALSE, sep = ",")
-
+submit <- function(filename) {
+  pred <- data.frame(cbind(test.VisitNumber, pred))
+  names(pred) <- c("VisitNumber", paste("TripType", outcomes$TripType, sep = "_")) 
+  
+  write.table(format(pred, scientific = FALSE), paste("./output/", filename, sep = ""), row.names = FALSE, sep = ",")
+}
+submit("xgboost7.csv")
 
 time.end <- Sys.time()
 time.end - time.start
 
 # http://api.walmartlabs.com/v1/items?format=json&apiKey=xkk84gntx74t2bmjx6gmgqcr&upc=078257317042
-
+ 
+# ## Naive Bayes
+# model <- naiveBayes(train, y)   
+# pred <- predict(model, test)  
+# 
+# 
+# table <- as.data.frame(rbind(as.matrix(table),as.matrix(table)))
+#                           nms <- colnames(table)
+#                           model <- naiveBayes(table[,1:length(nms)-1], factor(table[,length(nms)]))
+#                           predict(model, table[,1:(length(nms)-1)], type='raw')
