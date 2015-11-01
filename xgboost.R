@@ -21,6 +21,8 @@ library(stats)
 library(ggplot2)
 library(e1071)
 
+time.start <- Sys.time()
+
 # Read files
 train.data <- read.csv("./input/train.csv", header = TRUE)
 test.data <- read.csv("./input/test.csv", header = TRUE)
@@ -72,12 +74,12 @@ zero.var = nearZeroVar(train, saveMetrics=TRUE)
 zero.var
 zero.var[zero.var$zeroVar == TRUE, ]
 zero.var[zero.var$nzv == FALSE, ]
-
-# experimental - get rid of nzv features
-cols <- row.names(zero.var[zero.var$nzv == TRUE, ]) # columns to discard
-colNums <- match(cols, names(train))
-train <- select(train, -colNums)
-test <- select(test, -colNums)
+ 
+# # experimental - get rid of nzv features - resulted in worse performance
+# cols <- row.names(zero.var[zero.var$nzv == TRUE, ]) # columns to discard
+# colNums <- match(cols, names(train))
+# train <- select(train, -colNums)
+# test <- select(test, -colNums)
 
 # correlation matrix
 corrplot.mixed(cor(train), lower="circle", upper="color", 
@@ -190,8 +192,11 @@ pred <- t(pred)
 pred <- data.frame(cbind(test.VisitNumber, pred))
 names(pred) <- c("VisitNumber", paste("TripType", outcomes$TripType, sep = "_")) 
 
-write.table(format(pred, scientific = FALSE), "./output/xgboost4.csv", row.names = FALSE, sep = ",")
+write.table(format(pred, scientific = FALSE), "./output/xgboost6.csv", row.names = FALSE, sep = ",")
 
+
+time.end <- Sys.time()
+time.end - time.start
 
 # http://api.walmartlabs.com/v1/items?format=json&apiKey=xkk84gntx74t2bmjx6gmgqcr&upc=078257317042
 
