@@ -21,6 +21,8 @@ library(stats)
 library(ggplot2)
 library(e1071)
 
+# also look into slam package for sparse matricies
+
 time.start <- Sys.time()
 
 # Read files
@@ -49,7 +51,6 @@ dt$ReturnCount[dt$ReturnCount < 0] <- 0
 dt$ScanCount[dt$ScanCount < 0] <- 0
 
 dt$Weekday <- as.numeric(dt$Weekday)
-dt$FinelineNumber <- as.factor(dt$FinelineNumber)
 
 item.counts <- summarise(group_by(dt, VisitNumber), TotalScan = sum(ScanCount), TotalReturn = sum(ReturnCount))
 
@@ -63,7 +64,7 @@ dt.wide1 <- dcast(data = dt.long,
                  value.var = "value",
                  fun.aggregate = sum)
 
-dt.wide2 <- dcast(data = dt.long,
+dt.wide2 <- dcast(data = dt,
                   VisitNumber ~ FinelineNumber,
                   value.var = "ScanCount",
                   fun.aggregate = sum)
@@ -141,7 +142,7 @@ param <- list("objective" = "multi:softprob",    # multiclass classification
               "min_child_weight" = 12  # minimum sum of instance weight needed in a child 
 )
 
-train.matrix <- as.matrix(train)
+train.matrix <- as.matrix(train, sparse = TRUE)
 train.matrix <- as(train.matrix, "dgCMatrix") # conversion to sparse matrix
 dtrain <- xgb.DMatrix(data = train.matrix, label = y)
 
