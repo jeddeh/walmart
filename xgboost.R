@@ -20,77 +20,90 @@ library(Rtsne)
 library(stats)
 library(ggplot2)
 library(e1071)
+library(data.table)
 
 # also look into slam package for sparse matricies
 
 time.start <- Sys.time()
 
 # Read files
-train.data <- read.csv("./input/train.csv", header = TRUE)
-test.data <- read.csv("./input/test.csv", header = TRUE)
+train.data <- read.csv("./input/train.csv", header = TRUE, stringsAsFactors = TRUE) %>% data.table()
+test.data <- read.csv("./input/test.csv", header = TRUE, stringsAsFactors = TRUE) %>% data.table()
 
-# train.data <- train.data[1:1000, ]
-# test.data <- test.data[1:1000, ]
+# train.data <- top_n(train.data, 1000)
+# test.data <- top_n(test.data, 1000)
 
 # Create outcomes for xgboost
-outcomes <- data.frame(TripType = sort(unique(train.data$TripType)))
+outcomes <- data.table(TripType = sort(unique(train.data$TripType)))
 outcomes$Index <- seq_along(outcomes$TripType) - 1
 
 # Combine train and test
-dt <- rbind(train.data, cbind(TripType = -1, test.data))
+dt <- data.table(rbind(train.data, cbind(TripType = -1, test.data)))
 
 ## Preprocessing
 
 # Convert NA values
 # NA values are found in FinelineNumber and Upc. "NULL" string value is found in DepartmentDescription.
+dt$FinelineNumber <- addNA(dt$FinelineNumber)
+dt$Upc <- addNA(dt$Upc)
+dt <- dt[, NullDescription:=ifelse (dt$DepartmentDescription == "NULL", 1, 0)]
 
-# Feature engineering 
+## Feature engineering 
 # Include ReturnCount column
 dt$ReturnCount <- -dt$ScanCount
 dt$ReturnCount[dt$ReturnCount < 0] <- 0
 dt$ScanCount[dt$ScanCount < 0] <- 0
+dt$ResultCount <- dt$ScanCount - dt$ReturnCount
 
-dt$Weekday <- as.numeric(dt$Weekday)
+# Calculate Scan and Return counts by VisitNumber
+item.counts <- summarise(group_by(dt, VisitNumber),
+                         TotalScan = sum(ScanCount), TotalReturn = sum(ReturnCount), TotalResult = sum(ResultCount))
 
-item.counts <- summarise(group_by(dt, VisitNumber), TotalScan = sum(ScanCount), TotalReturn = sum(ReturnCount))
+# save.image("D:/Stats/Kaggle/walmart/xg1.RData")
+load("xg1.RData")
 
 # Convert dt data.frame from long to wide format using dcast from reshape2 package
 # We want to aggregate on columns "TripType", "VisitNumber" and "Weekday" 
-dt.long <- melt(data = dt, measure.vars = c("ScanCount", "ReturnCount"))
-dt.long <- rename(dt.long, ItemCount = variable)
+dt.long <- melt.data.table(data = dt, measure.vars = c("ScanCount", "ReturnCount", "ResultCount"),
+                           variable.name = "ItemCount")
 
-dt.wide1 <- dcast(data = dt.long,
+dt.wide1 <- dcast.data.table(data = dt.long,
                  VisitNumber + TripType + Weekday ~ DepartmentDescription + ItemCount,
                  value.var = "value",
-                 fun.aggregate = sum)
+                 fun.aggregate = sum) # %>% arrange(VisitNumber)
+  
 
-dt.wide2 <- dcast(data = dt,
-                  VisitNumber ~ FinelineNumber,
-                  value.var = "ScanCount",
-                  fun.aggregate = sum)
 
-dt.wide <- merge(dt.wide1, dt.wide2, by = "VisitNumber")
+# Memory issues with the below
+# dt.wide1 <- dcast.data.table(data = dt,
+#                              VisitNumber + TripType + Weekday ~ FinelineNumber,
+#                              value.var = "ResultCount",
+#                              fun.aggregate = sum) %>% arrange(VisitNumber)
+# 
+
+wd <- model.matrix(~0 + Weekday, data = dt.wide1)
+
+dt.wide1 <- cbind(wd, dt.wide1)
+dt.wide1 <- dt.wide1[, Weekday:=NULL]
+
+# all.equal(dt.wide1$VisitNumber, dt.wide2$VisitNumber)
+# dt.wide <- merge(dt.wide1, dt.wide2, by = "VisitNumber")
+
+dt.wide <- dt.wide1
+
+rm(dt.wide1)
+# rm(dt.wide2)
+
 dt.wide <- merge(dt.wide, item.counts, by = "VisitNumber")
 
 # Split train and test 
 train <- dt.wide[dt.wide$TripType != -1, ]
 test <- dt.wide[dt.wide$TripType == -1, ]
 
-train$VisitNumber <- NULL
+train <- train[, VisitNumber := NULL] # preferred way of deleting data.table columns
 test.VisitNumber <- test$VisitNumber
-test$VisitNumber <- NULL
+test <- test[, VisitNumber :=  NULL]
 
-# check for zero variances
-zero.var = nearZeroVar(train, saveMetrics=TRUE)
-zero.var
-zero.var[zero.var$zeroVar == TRUE, ]
-zero.var[zero.var$nzv == FALSE, ]
- 
-# # experimental - get rid of nzv features - resulted in worse performance
-# cols <- row.names(zero.var[zero.var$nzv == TRUE, ]) # columns to discard
-# colNums <- match(cols, names(train))
-# train <- select(train, -colNums)
-# test <- select(test, -colNums)
 
 # # correlation matrix
 # corrplot.mixed(cor(train), lower="circle", upper="color", 
@@ -124,8 +137,8 @@ zero.var[zero.var$nzv == FALSE, ]
 ## xgboost
 y <- plyr::mapvalues(train$TripType, from = outcomes$TripType, to = outcomes$Index)
 
-train$TripType <- NULL
-test$TripType <- NULL
+train <- train[, TripType := NULL]
+test <- test[, TripType := NULL]
 
 num.class <- length(unique(y))
 
@@ -142,7 +155,7 @@ param <- list("objective" = "multi:softprob",    # multiclass classification
               "min_child_weight" = 12  # minimum sum of instance weight needed in a child 
 )
 
-train.matrix <- as.matrix(train, sparse = TRUE)
+train.matrix <- as.matrix(train)
 train.matrix <- as(train.matrix, "dgCMatrix") # conversion to sparse matrix
 dtrain <- xgb.DMatrix(data = train.matrix, label = y)
 
@@ -152,8 +165,8 @@ set.seed(1234)
 cv.nround <- 50 # 200
 cv.nfold <- 3 # 10
 
-bst.cv <- xgb.cv(param=param, data = train.matrix, label = y, 
-                nfold = cv.nfold, nrounds = cv.nround, prediction = TRUE)
+bst.cv <- xgb.cv(param=param, data=dtrain, 
+                              nfold=cv.nfold, nrounds=cv.nround, prediction=TRUE) 
 
 tail(bst.cv$dt)
 
@@ -166,11 +179,11 @@ bst.cv$dt[min.error.index, ]
 
 ## Confusion matrix - needs checking
 # cv prediction decoding
-pred.cv = matrix(bst.cv$pred, nrow=length(bst.cv$pred)/num.class, ncol=num.class)
-pred.cv = max.col(pred.cv, "last")
+# pred.cv = matrix(bst.cv$pred, nrow=length(bst.cv$pred)/num.class, ncol=num.class)
+# pred.cv = max.col(pred.cv, "last")
 
 # Confusion matrix
-confusionMatrix(factor(pred.cv), factor(y + 1))
+# confusionMatrix(factor(pred.cv), factor(y + 1))
 
 ## Model
 nround = min.error.index # number of trees generated
@@ -189,7 +202,7 @@ importance_matrix <- xgb.importance(names, model = bst)
 xgb.plot.importance(importance_matrix[1:20,])
 
 # Tree plot - not working
-xgb.plot.tree(feature_names = names, model = bst, n_first_tree = 2)
+# xgb.plot.tree(feature_names = names, model = bst, n_first_tree = 2)
 
 ## Prediction
 test.matrix <- as.matrix(test)
@@ -197,16 +210,15 @@ pred <- predict(bst, test.matrix)
 
 # Decode prediction
 pred <- matrix(pred, nrow=num.class, ncol=length(pred) / num.class)
-pred <- t(pred)
+pred <- data.frame(cbind(test.VisitNumber, t(pred)))
 
 # output
 submit <- function(filename) {
-  pred <- data.frame(cbind(test.VisitNumber, pred))
   names(pred) <- c("VisitNumber", paste("TripType", outcomes$TripType, sep = "_")) 
   
   write.table(format(pred, scientific = FALSE), paste("./output/", filename, sep = ""), row.names = FALSE, sep = ",")
 }
-submit("xgboost7.csv")
+submit("xgboost11.csv")
 
 time.end <- Sys.time()
 time.end - time.start
@@ -219,6 +231,35 @@ time.end - time.start
 # 
 # 
 # table <- as.data.frame(rbind(as.matrix(table),as.matrix(table)))
-#                           nms <- colnames(table)
-#                           model <- naiveBayes(table[,1:length(nms)-1], factor(table[,length(nms)]))
-#                           predict(model, table[,1:(length(nms)-1)], type='raw')
+# 
+# nms <- colnames(table)
+# model <- naiveBayes(table[,1:length(nms)-1], factor(table[,length(nms)]))
+# predict(model, table[,1:(length(nms)-1)], type='raw')
+
+
+## Caret
+set.seed(1234)
+
+library(mlbench)
+library(caret)
+
+# check for zero variances
+zero.var = nearZeroVar(train, saveMetrics=TRUE)
+# zero.var
+# zero.var[zero.var$zeroVar == TRUE, ]
+# zero.var[zero.var$nzv == FALSE, ]
+
+cols <- row.names(zero.var[zero.var$nzv == TRUE, ]) # columns to discard
+colNums <- match(cols, names(train))
+ntrain <- select(train, -colNums)
+
+corr <- cor(ntrain)
+corr
+
+model <- naiveBayes(ntrain, y)   
+pred <- predict(model, test)  
+
+
+# Decode prediction
+pred <- matrix(pred, nrow=num.class, ncol=length(pred) / num.class)
+pred <- data.frame(cbind(test.VisitNumber, t(pred)))
