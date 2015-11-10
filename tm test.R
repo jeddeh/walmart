@@ -56,9 +56,6 @@ trip$ResultCount <- trip$ScanCount - trip$ReturnCount
 item.counts <- summarise(group_by(trip, VisitNumber),
                          TotalScan = sum(ScanCount), TotalReturn = sum(ReturnCount), TotalResult = sum(ResultCount))
 
-# save.image("D:/Stats/Kaggle/walmart/xg1.RData")
-# load("xg1.RData")
-
 # Convert trip data.frame from long to wide format using dcast from reshape2 package
 # We want to aggregate on columns "TripType", "VisitNumber" and "Weekday"
 trip.long <- melt.data.table(data = trip, measure.vars = c("ScanCount", "ReturnCount", "ResultCount"),
@@ -76,12 +73,12 @@ trip.wide <- trip.wide[, Weekday:=NULL]
 
 trip.wide <- merge(trip.wide, item.counts, by = "VisitNumber")
 
+# save.image("D:/Stats/Kaggle/walmart/xg1.RData")
+
 ## Creates a list for each group
 # dlist1a <- aggregate(FinelineNumber ~ VisitNumber, data = select(trip, VisitNumber, FinelineNumber), FUN = I)
 # dlist1a$FinelineNumber[dlist1a$VisitNumber == 7][[1]]
 # table(dlist1a$FinelineNumber[dlist1a$VisitNumber == 7][[1]])
-
-
 
 
 ## Learning Walmart data with RTextTools -
@@ -89,28 +86,53 @@ trip.wide <- merge(trip.wide, item.counts, by = "VisitNumber")
 
 library(tm)
 library(RTextTools)
+library(stringi)
 
 # returns string w/o leading or trailing whitespace
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
-concat <- function(scanCount, returnCount, id) {
-    result <- trim(paste(c(rep(as.character(id), scanCount),
-          rep(as.character(-id), returnCount)),
-          collapse = " "))
+# concatneg <- function(scanCount, returnCount, id) {
+#     paste(c(rep(id, scanCount),
+#           rep(paste("-", id, sep = ""), returnCount)),
+#           collapse = " ")
+# }
 
-    result
-}
+load("xg1.RData")
 
-trip$Upc <- as.numeric(trip$Upc)
-trip <- mutate(trip, x = concat(trip$ScanCount, trip$ReturnCount, trip$Upc))
+trip$UpcIndex <- as.factor(trip$Upc) %>% as.numeric() %>% as.character()
+trip$UpcIndex <- paste0("U", trip$UpcIndex)
 
-trip <- transform(trip, x = trim(paste(c(rep(as.character(Upc), ScanCount),
-                                         rep(as.character(-Upc), ReturnCount)),
-                                       collapse = " ")))
+trip$FinelineIndex <- as.factor(trip$FinelineNumber) %>% as.numeric() %>% as.character()
+trip$FinelineIndex <- paste0("F", trip$FinelineIndex)
 
+trip$DepartmentIndex <- as.numeric(trip$DepartmentDescription) %>% as.character()
+trip$DepartmentIndex <- paste0("D", trip$DepartmentIndex)
 
+trip$NullDescriptionIndex <- ifelse(trip$NullDescription == 1, "ND", "")
+trip$NAUpcIndex <- ifelse(trip$NAUpc == 1, "NU", "")
+trip$NAFinelineIndex <- ifelse(trip$NAFinelineNumber == 1, "NF", "")
 
-trip <- mutate(trip, x = paste(  replicate(2, trip$DepartmentDescription), collapse = " "  ))
+k <- character(length(unique(trip$VisitNumber)))
 
-docs <- c("this is a rat", "this is another rat")
-walmart <- VCorpus(VectorSource(docs))
+system.time(
+    for (i in 1:nrow(trip)) {
+        if (k[trip$VisitNumber[i]] == "") {
+            k[trip$VisitNumber[i]] <- trip$Weekday[i]
+        }
+
+        if (trip$ResultCount[i] > 0) {
+            k[trip$VisitNumber[i]] <- paste(k[trip$VisitNumber[i]],
+                                            paste(rep(paste(trip$UpcIndex[i],
+                                                              trip$FinelineIndex[i],
+                                                              trip$DepartmentDescriptionIndex[i],
+                                                              trip$NullDescriptionIndex[i],
+                                                              trip$NAUpcIndex[i],
+                                                              trip$NAFinelineIndex[i]),
+                                                              # trip$ResultCount[i])), collapse = " ")
+                                                        1)), collapse = " ")
+        }
+    }
+)
+
+walmart <- VCorpus(VectorSource(k))
+

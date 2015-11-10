@@ -66,8 +66,8 @@ trip$ResultCount <- trip$ScanCount - trip$ReturnCount
 item.counts <- summarise(group_by(trip, VisitNumber),
                          TotalScan = sum(ScanCount), TotalReturn = sum(ReturnCount), TotalResult = sum(ResultCount))
 
-# save.image("D:/Stats/Kaggle/walmart/xg1.RData")
-# load("xg1.RData")
+save.image("D:/Stats/Kaggle/walmart/xg1.RData")
+load("xg1.RData")
 
 # Convert trip data.frame from long to wide format using dcast from reshape2 package
 # We want to aggregate on columns "TripType", "VisitNumber" and "Weekday"
@@ -79,6 +79,8 @@ trip.wide <- dcast.data.table(data = trip.long,
                              value.var = "value",
                              fun.aggregate = sum) # %>% arrange(VisitNumber)
 
+rm(trip.long)
+
 wd <- model.matrix(~0 + Weekday, data = trip.wide)
 
 trip.wide <- cbind(wd, trip.wide)
@@ -87,23 +89,31 @@ trip.wide <- trip.wide[, Weekday:=NULL]
 trip.wide <- merge(trip.wide, item.counts, by = "VisitNumber")
 
 # Split train and test
-fineline <- with(trip, sparseMatrix(i = 1:nrow(trip), j = FinelineIndex, x = ResultCount, index1 = TRUE, giveCsparse = TRUE))
+train.fineline <- sparseMatrix(i = c(as.character(trip$VisitNumber[trip$TripType != -1]) %>% as.factor() %>% as.numeric() , 1),
+                               j = c(trip$FinelineIndex[trip$TripType != -1], 5353),
+                               x = c(trip$ResultCount[trip$TripType != -1], 0),
+                               index1 = TRUE,
+                               giveCsparse = TRUE)
 
-train.fineline <- fineline[which(trip$TripType != -1), ]
+test.fineline <- sparseMatrix(i = as.character(trip$VisitNumber[trip$TripType == -1]) %>% as.factor() %>% as.numeric(),
+                               j = trip$FinelineIndex[trip$TripType == -1],
+                               x = trip$ResultCount[trip$TripType == -1],
+                               index1 = TRUE,
+                               giveCsparse = TRUE)
 
 y <- plyr::mapvalues(trip.wide$TripType[trip.wide$TripType != -1], from = outcomes$TripType, to = outcomes$Index)
 test.VisitNumber <- trip.wide$VisitNumber[trip.wide$VisitNumber == -1]
 
 trip.wide <- trip.wide[, VisitNumber:=NULL]
-trip.wide <- trip.wide[, TripType:=NULL]
+# trip.wide <- trip.wide[, TripType:=NULL]
 
-train.main <- as.matrix(trip.wide[trip.wide$TripType != -1, !names(trip.wide) == "TripType"]) %>% as("dgCMatrix") # conversion to sparse matrix
-test.main <- as.matrix(trip.wide[trip.wide$TripType == -1, !names(trip.wide == "TripType")]) %>% as("dgCMatrix")
+train.main <- as.matrix(select(trip.wide[trip.wide$TripType != -1], -TripType)) %>% as("dgCMatrix") # conversion to sparse matrix
+test.main <- as.matrix(select(trip.wide[trip.wide$TripType == -1], -TripType)) %>% as("dgCMatrix")
 
 train <- cbind(train.main, train.fineline)
 test <- cbind(test.main, test.fineline)
 
-dtrain <- xgb.DMatrix(data = train.matrix, label = y)
+dtrain <- xgb.DMatrix(data = train, label = y)
 
 #train <- train[, VisitNumber := NULL] # preferred way of deleting data.table columns
 #test.VisitNumber <- test$VisitNumber
@@ -157,12 +167,8 @@ param <- list("objective" = "multi:softprob",    # multiclass classification
               "gamma" = 0,    # minimum loss reduction
               "subsample" = 1,    # part of data instances to grow tree
               "colsample_bytree" = 1,  # subsample ratio of columns when constructing each tree
-              "min_child_weight" = 12  # minimum sum of instance weight needed in a child
+              "min_child_weight" = 3  # minimum sum of instance weight needed in a child
 )
-
-train.matrix <- as.matrix(train)
-train.matrix <- as(train.matrix, "dgCMatrix") # conversion to sparse matrix
-dtrain <- xgb.DMatrix(data = train.matrix, label = y)
 
 ## cv
 set.seed(1234)
@@ -192,26 +198,29 @@ bst.cv$trip[min.error.index, ]
 
 ## Model
 nround = min.error.index # number of trees generated
+nround <- 40
 bst <- xgboost(param = param, data = dtrain, nrounds = nround, verbose = TRUE)
+
+save.image("xg2.RData")
+load("xg2.RData")
 
 model <- xgb.dump(bst, with.stats = T)
 model[1:10]
 
 # Get the feature real names
-names <- dimnames(train.matrix)[[2]]
+# names <- dimnames(train.matrix)[[2]]
 
 # Compute feature importance matrix
-importance_matrix <- xgb.importance(names, model = bst)
+# importance_matrix <- xgb.importance(names, model = bst)
 
 # Nice graph
-xgb.plot.importance(importance_matrix[1:20,])
+# xgb.plot.importance(importance_matrix[1:20,])
 
 # Tree plot - not working
 # xgb.plot.tree(feature_names = names, model = bst, n_first_tree = 2)
 
 ## Prediction
-test.matrix <- as.matrix(test)
-pred <- predict(bst, test.matrix)
+pred <- predict(bst, test)
 
 # Decode prediction
 pred <- matrix(pred, nrow=num.class, ncol=length(pred) / num.class)
@@ -223,7 +232,7 @@ submit <- function(filename) {
 
   write.table(format(pred, scientific = FALSE), paste("./output/", filename, sep = ""), row.names = FALSE, sep = ",")
 }
-submit("xgboost11.csv")
+submit("xgboost12.csv")
 
 time.end <- Sys.time()
 time.end - time.start
